@@ -51,7 +51,6 @@ def parse_data(data):
 
     yield name, newstring
                 
-#note: even if this works, still have to figure out how to get the last one
      
 if __name__=='__main__':
     with open('rosalind_gc.txt', 'r') as f:
