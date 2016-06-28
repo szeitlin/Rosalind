@@ -1,7 +1,15 @@
 __author__ = 'szeitlin'
 
 import unittest
-from overlap import overlap, base_counts, directional, parse_nodes, compare_multiple
+from overlap import (overlap,
+                     base_counts,
+                     directional,
+                     parse_nodes,
+                     compare_multiple,
+                     compare_base_counts,
+                     make_score_dict,
+                     pick_best_matches)
+
 from gc_content import parse_data
 
 class TestSingleOverlap(unittest.TestCase):
@@ -39,13 +47,40 @@ class TestMultipleOverlap(unittest.TestCase):
                                                      ('Rosalind_5013', 'GGGTGGG')])
 
     def test_compare_multiple(self):
-        self.longMessage = True
+        self.longMessage = True #for debugging without truncation
         labeled = parse_nodes(self.data)
         actual = list(compare_multiple(labeled))[0]
         expected = (('Rosalind_0498', 'AAATAAA'),
          [('Rosalind_2391', 'AAATTTT'), ('Rosalind_0442', 'AAATCCC')])
 
         self.assertEqual(expected, actual, msg='{0},{1}'.format(expected, actual))
+
+    def test_compare_base_counts(self):
+        labeled = parse_nodes(self.data)
+        sample = list(compare_multiple(labeled))[0]
+        current = sample[0]
+        overlaps = sample[1]
+        self.assertEqual(compare_base_counts(current, overlaps[0]), 1)
+        self.assertEqual(compare_base_counts(current, overlaps[1]), 2)
+        self.assertEqual(compare_base_counts(overlaps[0], overlaps[1]), 0)
+
+    def test_make_score_dict(self):
+        labeled = parse_nodes(self.data)
+        sample = list(compare_multiple(labeled))[0]
+        current = sample[0]
+        overlaps = sample[1]
+        scored_pairs = make_score_dict(current, overlaps)
+        self.assertEqual(len(scored_pairs), 2)
+        self.assertEqual(sorted(scored_pairs.values()), [1, 2])
+
+    def test_pick_best_matches(self): #note that the current scoring includes identity matches that might be irrelevant
+        labeled = parse_nodes(self.data)
+        sample = list(compare_multiple(labeled))[0]
+        current = sample[0]
+        overlaps = sample[1]
+        scored_pairs = make_score_dict(current, overlaps)
+        best_pair = pick_best_matches(scored_pairs)
+        self.assertEqual(best_pair, (('Rosalind_0498', 'AAATAAA'), ('Rosalind_0442', 'AAATCCC')))
 
     def test_directional_multiple(self):
         labeled = parse_nodes(self.data)

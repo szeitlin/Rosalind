@@ -1,16 +1,17 @@
 __author__ = 'szeitlin'
 
+import operator
 from gc_content import parse_data
 
-def overlap(one, two):
+def overlap(counts1, counts2):
     """
-    Test whether two sequences share similar motifs on the ends, i.e.
+    Simplest test for whether two sequences share similar motifs on the ends, i.e.
     one has it as a suffix, and the other has it as a prefix.
 
     Note that this doesn't do anything about returning results in order.
 
-    :param one: str
-    :param two: str
+    :param one: base counts for a str
+    :param two: base counts for a str
     :return: bool
 
     >>> overlap("AAATAAA", "AAATTTT")
@@ -22,9 +23,6 @@ def overlap(one, two):
     >>> overlap("AAATTAA", "AAATTTT")
     False
     """
-    counts1 = base_counts(one)
-    counts2 = base_counts(two)
-
     if counts1 == counts2:
         return False
 
@@ -52,6 +50,54 @@ def directional(one, two):
         return two[0], one[0]
     elif (counts1[-1] == counts2[0]):
         return one[0], two[0]
+
+def compare_base_counts(one, two):
+    """
+    Get the base_counts and use it to score the overlap for two str.
+    :param one: tuple of name, seq
+    :param two: tuple of name, seq
+    :return: score (int)
+    """
+    counts1, counts2 = get_base_counts(one, two)
+
+    #for now, try just using a 1 if there's a match, 0 if not, and sum that.
+    scorelist = []
+
+    #have to reverse one b/c we want overlap, not identity
+    #if they're not the same length, always reverse the longer one b/c zip will truncate
+
+    #avoid calculating the length repeatedly, b/c it's slow
+    one_len = len(counts1)
+    two_len = len(counts2)
+
+    if (one_len == two_len) or (two_len > one_len):
+        original = counts1
+        flipped = reversed(counts2)
+    elif one_len > two_len:
+        original = counts2
+        flipped = reversed(counts1)
+
+    for x,y in zip(original, flipped):
+        if x==y:
+            scorelist.append(1)
+        else:
+            scorelist.append(0)
+
+    return sum(scorelist)
+
+def get_base_counts(one, two):
+    """
+    Applies the base_counts method to two strings and saves the results to variables for re-use.
+    :param one: tuple of (str, str) with name, seq
+    :param two: tuple of (str, str) with name, seq
+    :return: two lists of str (of format char + int)
+    >>> base_counts("ATCG")
+    ['A1', 'T1', 'C1', 'G1']
+    """
+    counts1 = base_counts(one[1])
+    counts2 = base_counts(two[1])
+
+    return counts1, counts2
 
 def base_counts(seq):
     """
@@ -111,7 +157,7 @@ def compare_multiple(labeled):
     Find overlaps across more than pairs of sequences.
 
     :param listofseq: list of tuples of (str, str) with name, seq
-    :return: list of names that overlap
+    :return: tuple of current (tuple of str,str) and overlaps (list of tuples of str,str)
 
     >>> compare_multiple([('Rosalind_0498', 'AAATAAA'), ('Rosalind_2391', 'AAATTTT'),\
     ('Rosalind_2323', 'TTTTCCC'), ('Rosalind_0442', 'AAATCCC'), ('Rosalind_5013', 'GGGTGGG')])
@@ -125,6 +171,46 @@ def compare_multiple(labeled):
         overlaps = [x[0] for x in compared if x[1] is True]
 
         yield current, overlaps
+
+def make_score_dict(current, overlaps):
+    """
+    Score multiple overlaps for ranking best matches.
+
+    :param current: tuple of (str,str) with name, seq
+    :param overlaps: list of tuples of (str,str) with name, seq
+    :return:
+    """
+    scored_pairs = dict()
+
+    while len(overlaps) > 1:
+        mate = overlaps.pop(0)
+        #score them by how well they match
+        score = compare_base_counts(current, mate)
+        scored_pairs[current, mate] = score
+
+    #get the last one
+    mate = overlaps[0]
+    score = compare_base_counts(current, mate)
+    scored_pairs[current, mate] = score
+
+    return scored_pairs
+
+def pick_best_matches(scored_pairs):
+    """
+    If scored_pairs have different scores, return the highest one.
+    If the scores are the same, return multiple values.
+
+    :param scored_pairs: dict of
+    (str,str) tuple keys with (name, seq) pairs: score (int) values
+    :return: list of keys with the best scores
+    """
+    #if all values are equal, return all the keys
+    if len(set(scored_pairs.values())) == 1:
+        return scored_pairs.keys()
+
+    #otherwise, return the highest one
+    elif len(set(scored_pairs.values())) > 1:
+        return sorted(scored_pairs.items(), key=operator.itemgetter(1))[-1][0]
 
 def parse_nodes(data):
     """
