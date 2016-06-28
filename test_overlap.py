@@ -70,6 +70,7 @@ class TestMultipleOverlap(unittest.TestCase):
         current = sample[0]
         overlaps = sample[1]
         scored_pairs = make_score_dict(current, overlaps)
+        self.assertNotIn((current, current), scored_pairs.keys())
         self.assertEqual(len(scored_pairs), 2)
         self.assertEqual(sorted(scored_pairs.values()), [1, 2])
 
@@ -81,6 +82,28 @@ class TestMultipleOverlap(unittest.TestCase):
         scored_pairs = make_score_dict(current, overlaps)
         best_pair = pick_best_matches(scored_pairs)
         self.assertEqual(best_pair, (('Rosalind_0498', 'AAATAAA'), ('Rosalind_0442', 'AAATCCC')))
+
+    def test_equally_good_matches(self):
+        current = ('fake1', 'AAA')
+        overlaps = [('fake2', 'AAA'), ('fake3', 'AAA')]
+        self.assertGreater(len(overlaps), 1)
+        scored_pairs = make_score_dict(current, overlaps)
+        best_pair = pick_best_matches(scored_pairs)
+        self.assertGreater(len(best_pair), 1)
+        self.assertIn(('fake2', 'AAA'), list(best_pair)[1])
+        self.assertIn(('fake3', 'AAA'), list(best_pair)[0])
+
+    def test_directional_best_pair(self):
+        labeled = parse_nodes(self.data)
+        sample = list(compare_multiple(labeled))[0]
+        current = sample[0]
+        overlaps = sample[1]
+        scored_pairs = make_score_dict(current, overlaps)
+        self.assertNotIn((current, current), scored_pairs.keys())
+        best_pair = pick_best_matches(scored_pairs)
+        self.assertNotIn((current, current), list(best_pair))
+        tup = directional(list(best_pair)[0], list(best_pair)[1])
+        self.assertEqual(tup, ('Rosalind_0498', 'Rosalind_0442'))
 
     def test_directional_multiple(self):
         labeled = parse_nodes(self.data)

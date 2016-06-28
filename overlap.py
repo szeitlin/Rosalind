@@ -46,10 +46,14 @@ def directional(one, two):
     counts1 = base_counts(one[1])
     counts2 = base_counts(two[1])
 
+    print(counts1, counts2)
+
     if (counts1[0] == counts2[-1]):
         return two[0], one[0]
-    elif (counts1[-1] == counts2[0]):
+    elif (counts1[-1] == counts2[0]) or (counts1 == counts2):
         return one[0], two[0]
+    else:
+        raise Exception("possible overlap error here")
 
 def compare_base_counts(one, two):
     """
@@ -172,6 +176,7 @@ def compare_multiple(labeled):
 
         yield current, overlaps
 
+
 def make_score_dict(current, overlaps):
     """
     Score multiple overlaps for ranking best matches.
@@ -243,15 +248,25 @@ if __name__=='__main__':
         try:
             current, overlaps = next(comparer)
             while len(overlaps) > 1:
-                path = overlaps.pop()
-                tup = directional(current, path)
-                printer(tup)
-            else:
-                if len(overlaps) == 1:
-                    tup = directional(current, overlaps[0])
-                    printer(tup)
+                scored_pairs = make_score_dict(current, overlaps)
+                best_pair = pick_best_matches(scored_pairs)
+                print(best_pair)
+
+#                 while len(best_pair) > 1:
+#                     path = list(best_pair).pop(0)
+#                     tup = directional(path[0], path[1])
+# #                    printer(tup)
+#                 else:
+#                     if len(best_pair) == 1:
+#                         tup = directional(list(best_pair)[0], list(best_pair)[1]) #should fix this
+# #                        printer(tup)
+#
+#             else:
+#                 if len(overlaps) == 1:
+#                     tup = directional(current, overlaps[0])
+# #                    printer(tup)
 
         except StopIteration:
             break
 
-#have to do something to remove duplicates/break ties
+
