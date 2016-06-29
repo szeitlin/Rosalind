@@ -57,7 +57,7 @@ def directional(one, two):
 
 def compare_base_counts(one, two):
     """
-    Get the base_counts and use it to score the overlap for two str.
+    Get the base_counts and use it to score the maximum end overlap for two str.
     Allow mismatch followed by match,
     don't allow match followed by mismatch.
 
@@ -85,6 +85,34 @@ def compare_base_counts(one, two):
                 scorelist.append(-1)
 
         elif counts1[i] == counts2[j]:
+            scorelist.append(1)
+
+    return sum(scorelist)
+
+def get_o3_overlap_only(one, two):
+    """
+    Instead of using base_counts to get maximum overlap,
+    just score the overlap of the 3 end bases.
+
+    :param one: tuple of name, seq
+    :param two: tuple of name, seq
+    :return: overlap score (int)
+    """
+    i = -1
+    scorelist = []
+
+    one_len = len(one[1])
+    two_len = len(two[1])
+
+    for j in range(3):
+        if one[1][i] != two[1][j]:
+            if any([x > 0 for x in scorelist]):
+                break
+            else:
+                #penalty for mismatches, otherwise just get similarity
+                scorelist.append(-1)
+
+        elif one[1][i] == two[1][j]:
             scorelist.append(1)
 
     return sum(scorelist)
@@ -156,9 +184,12 @@ def base_totals(seq):
 
     return totals
 
-def compare_multiple(labeled):
+def compare_multiple(labeled, debug=False, unlimited=False):
     """
     Find overlaps across more than pairs of sequences.
+
+    unlimited option will get maximum overlap.
+    otherwise default looks at overlap of only 3 bases.
 
     :param listofseq: list of tuples of (str, str) with name, seq
     :return: tuple of best match
@@ -180,8 +211,13 @@ def compare_multiple(labeled):
             x = labeled[i]
          #   print("comparing to {}".format(x))
 
-            score1 = compare_base_counts(current, x)
-            score2 = compare_base_counts(x, current)
+            if unlimited == True:
+                score1 = compare_base_counts(current, x)
+                score2 = compare_base_counts(x, current)
+            else:
+                score1 = get_o3_overlap_only(current, x)
+                score2 = get_o3_overlap_only(x, current)
+
          #   print(current, x, score1)
          #   print(x, current, score2)
 
@@ -228,7 +264,10 @@ def compare_multiple(labeled):
             elif (score1 < score2) and (score2 > 0):
                 score_dict[(x[0], lookup)] = score2
 
-    return list(score_dict.keys())
+    if debug==True:
+        return score_dict
+    else:
+        return list(score_dict.keys())
 
 def make_score_dict(current, overlaps):
     """
@@ -294,12 +333,13 @@ if __name__=='__main__':
         data = f.readlines()
 
     labeled = list(parse_data(data))
-    scored = compare_multiple(labeled)
-    printer = lambda tup: print('{} {}'.format(tup[0],tup[1]))
+    scored = compare_multiple(labeled, debug=True)
+    print(scored)
 
-    with open("overlaps.txt", 'w') as results:
-        for item in scored:
-            results.write("{} {}\n".format(item[0], item[1]))
+    #to make a graph with Gephi:
+    # with open("overlaps.csv", 'w') as results:
+    #     for item in scored:
+    #         results.write("{};{}\n".format(item[0], item[1]))
 
 
 
