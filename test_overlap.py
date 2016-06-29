@@ -50,11 +50,9 @@ class TestMultipleOverlap(unittest.TestCase):
     def test_compare_multiple(self):
         self.longMessage = True #for debugging without truncation
         labeled = parse_nodes(self.data)
-        actual = list(compare_multiple(labeled))[0]
-        expected = (('Rosalind_0498', 'AAATAAA'),
-         [('Rosalind_2391', 'AAATTTT'), ('Rosalind_0442', 'AAATCCC')])
-
-        self.assertEqual(expected, actual, msg='{0},{1}'.format(expected, actual))
+        actual = compare_multiple(labeled)
+        expected = [('Rosalind_0498', 'Rosalind_2391'), ('Rosalind_2391', 'Rosalind_2323'), ('Rosalind_0498', 'Rosalind_0442')]
+        self.assertEqual(set(expected), set(actual), msg='{0},{1}'.format(expected, actual))
 
     def test_compare_base_count_sums(self):
         """

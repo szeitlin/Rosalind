@@ -58,32 +58,36 @@ def directional(one, two):
 def compare_base_counts(one, two):
     """
     Get the base_counts and use it to score the overlap for two str.
+    Allow mismatch followed by match,
+    don't allow match followed by mismatch.
+
     :param one: tuple of name, seq
     :param two: tuple of name, seq
     :return: score (int)
     """
     counts1, counts2 = get_base_counts(one, two)
 
-    #for now, try just using a 1 if there's a match, 0 if not, and sum that.
-    scorelist = []
-
-    #have to reverse one b/c we want overlap, not identity
-    #if they're not the same length, always reverse the longer one b/c zip will truncate
+    #NOTE: we want overlap, not identity and not complementarity
 
     #avoid calculating the length repeatedly, b/c it's slow
     one_len = len(counts1)
     two_len = len(counts2)
 
     i = -1
-    score = 0
+    scorelist = []
+
     for j in range(min(one_len, two_len)):
         if counts1[i] != counts2[j]:
-            i -=1
-        elif counts1[i] == counts2[j]:
-            score +=1
-            i -= 1
+            if any([x > 0 for x in scorelist]):
+                break
+            else:
+                #penalty for mismatches, otherwise just get similarity
+                scorelist.append(-1)
 
-    return score
+        elif counts1[i] == counts2[j]:
+            scorelist.append(1)
+
+    return sum(scorelist)
 
 def get_base_counts(one, two):
     """
@@ -166,24 +170,63 @@ def compare_multiple(labeled):
     """
     score_dict = dict()
 
-    while labeled:
+    while len(labeled) >=2:
+
         current = labeled.pop(0)
-        x = labeled.pop(0)
-        score1 = compare_base_counts(current, x)
-        score2 = compare_base_counts(x, current)
-        if (score1 != score2):
-            if score1 > score2:
-                #in order to get the best matches,
-                # I think I need to check here if the existing score is lower or higher
-                #than the new one, and update rather than overwrite
-                score_dict[(current[0], x[0])] = score1
-            elif score1 < score2:
-                score_dict[(x[0], current[0])] = score2
-        elif score1 == score2:
-            if score1 == 0:
-                continue
-            else:
-                score_dict[(current[0], x[0])] = score1
+        #print("current is {}".format(current))
+
+        for i in range(len(labeled)):
+         #   print(score_dict)
+            x = labeled[i]
+         #   print("comparing to {}".format(x))
+
+            score1 = compare_base_counts(current, x)
+            score2 = compare_base_counts(x, current)
+         #   print(current, x, score1)
+         #   print(x, current, score2)
+
+            lookup = current[0]
+
+            if score1 == score2:
+                if score1 <= 0:
+                    continue
+
+            if any(lookup in x for x in score_dict.keys()):
+                oldmatch = [x for x in score_dict.keys() if lookup in x]
+                oldscore = score_dict[oldmatch[0]]
+          #      print("found an existing score {}: {}".format(oldmatch, oldscore))
+
+                if (oldscore > score1) and (oldscore > score2):
+                    continue
+
+                elif oldscore:
+                    #if new scores are equal and better (unlikely)
+                    if (score1 == score2) and (score1 > oldscore):
+                       # print("equal and better!")
+                        del score_dict[oldmatch[0]] #remove the old match if it's lower
+                        score_dict[(lookup, x[0])] = score1
+
+                    #if new scores are unequal
+                    elif (score1 > oldscore) or (score2 > oldscore):
+                       # print("one new score is better!")
+                        del score_dict[oldmatch[0]]
+                        if score1 > oldscore:
+                            score_dict[(lookup, x[0])] = score1
+                        elif score2 > oldscore:
+                            score_dict[(x[0], lookup)] = score2
+
+                    #don't delete them if they're at least as good
+                    elif (score1 == oldscore) or (score2 == oldscore):
+                       # print("scores are at least as good as before!")
+                        if score1 == oldscore:
+                            score_dict[(lookup, x[0])] = score1
+                        elif score2 == oldscore:
+                            score_dict[(x[0], lookup)] = score2
+
+            elif (score1 > score2) and (score1 > 0):
+                score_dict[(lookup, x[0])] = score1
+            elif (score1 < score2) and (score2 > 0):
+                score_dict[(x[0], lookup)] = score2
 
     return list(score_dict.keys())
 
@@ -253,7 +296,10 @@ if __name__=='__main__':
     labeled = list(parse_data(data))
     scored = compare_multiple(labeled)
     printer = lambda tup: print('{} {}'.format(tup[0],tup[1]))
-    print(score_dict)
+
+    with open("overlaps.txt", 'w') as results:
+        for item in scored:
+            results.write("{} {}\n".format(item[0], item[1]))
 
 
 
