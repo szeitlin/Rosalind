@@ -108,8 +108,8 @@ class TestMultipleOverlap(unittest.TestCase):
         scored_pairs = make_score_dict(current, overlaps)
         best_pair = pick_best_matches(scored_pairs)
         self.assertGreater(len(best_pair), 1)
-        self.assertIn(('fake2', 'AAA'), list(best_pair)[1])
-        self.assertIn(('fake3', 'AAA'), list(best_pair)[0])
+        self.assertIn(('fake2', 'AAA'), sorted(list(best_pair))[0])
+        self.assertIn(('fake3', 'AAA'), sorted(list(best_pair))[1])
 
     def test_directional_best_pair(self):
         labeled = parse_nodes(self.data)
@@ -133,7 +133,7 @@ class TestMultipleOverlap(unittest.TestCase):
     def test_old_parser(self):
         parser = parse_data(self.big_data)
         name, sequence = next(parser)
-        self.assertEqual(name, 'Rosalind_5804')
+        self.assertEqual(name, 'Rosalind_3496')
         self.assertEqual(sequence,
         'ATGGCAGTCCGAGTTCACGAACCGAATACGTTTAATAGGTAGTCGCCACCACTTAGACGGGTTCTCGCCTATAGGGAACATTAAAGGCGTGGAATTCG')
 

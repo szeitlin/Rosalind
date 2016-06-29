@@ -157,21 +157,35 @@ def compare_multiple(labeled):
     Find overlaps across more than pairs of sequences.
 
     :param listofseq: list of tuples of (str, str) with name, seq
-    :return: tuple of current (tuple of str,str) and overlaps (list of tuples of str,str)
+    :return: tuple of best match
 
     >>> compare_multiple([('Rosalind_0498', 'AAATAAA'), ('Rosalind_2391', 'AAATTTT'),\
     ('Rosalind_2323', 'TTTTCCC'), ('Rosalind_0442', 'AAATCCC'), ('Rosalind_5013', 'GGGTGGG')])
     ('Rosalind_0498', 'AAATAAA'), [('Rosalind_2391', 'AAATTTT'), ('Rosalind_0442', 'AAATCCC')]
 
     """
+    score_dict = dict()
+
     while labeled:
         current = labeled.pop(0)
-        compare = [overlap(current[1], x[1]) for x in labeled]
-        compared = [(x,y) for (x,y) in zip(labeled, compare)]
-        overlaps = [x[0] for x in compared if x[1] is True]
+        x = labeled.pop(0)
+        score1 = compare_base_counts(current, x)
+        score2 = compare_base_counts(x, current)
+        if (score1 != score2):
+            if score1 > score2:
+                #in order to get the best matches,
+                # I think I need to check here if the existing score is lower or higher
+                #than the new one, and update rather than overwrite
+                score_dict[(current[0], x[0])] = score1
+            elif score1 < score2:
+                score_dict[(x[0], current[0])] = score2
+        elif score1 == score2:
+            if score1 == 0:
+                continue
+            else:
+                score_dict[(current[0], x[0])] = score1
 
-        yield current, overlaps
-
+    return list(score_dict.keys())
 
 def make_score_dict(current, overlaps):
     """
@@ -237,34 +251,9 @@ if __name__=='__main__':
         data = f.readlines()
 
     labeled = list(parse_data(data))
-    comparer = compare_multiple(labeled)
+    scored = compare_multiple(labeled)
     printer = lambda tup: print('{} {}'.format(tup[0],tup[1]))
+    print(score_dict)
 
-    while comparer:
-        try:
-            current, overlaps = next(comparer)
-            while len(overlaps) > 1:
-                scored_pairs = make_score_dict(current, overlaps)
-                best_pair = pick_best_matches(scored_pairs)
-                #print(best_pair)
-
-                while len(best_pair) > 2:
-                    node1 = best_pair.pop(0)
-                    node2 = best_pair.pop(0)
-                    tup = directional(node1, node2)
-#                    printer(tup)
-                else:
-                    if len(best_pair) == 2:
-                        print(best_pair)
-                        tup = directional(best_pair[0], best_pair[1]) #should fix this
-#                        printer(tup)
-
-            else:
-                if len(overlaps) == 1:
-                    tup = directional(current, overlaps[0])
-#                    printer(tup)
-
-        except StopIteration:
-            break
 
 
