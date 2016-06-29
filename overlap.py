@@ -74,20 +74,16 @@ def compare_base_counts(one, two):
     one_len = len(counts1)
     two_len = len(counts2)
 
-    if (one_len == two_len) or (two_len > one_len):
-        original = counts1
-        flipped = reversed(counts2)
-    elif one_len > two_len:
-        original = counts2
-        flipped = reversed(counts1)
+    i = -1
+    score = 0
+    for j in range(min(one_len, two_len)):
+        if counts1[i] != counts2[j]:
+            i -=1
+        elif counts1[i] == counts2[j]:
+            score +=1
+            i -= 1
 
-    for x,y in zip(original, flipped):
-        if x==y:
-            scorelist.append(1)
-        else:
-            scorelist.append(0)
-
-    return sum(scorelist)
+    return score
 
 def get_base_counts(one, two):
     """
@@ -207,11 +203,11 @@ def pick_best_matches(scored_pairs):
 
     :param scored_pairs: dict of
     (str,str) tuple keys with (name, seq) pairs: score (int) values
-    :return: list of keys with the best scores
+    :return: tuple of tuples with the best scores
     """
     #if all values are equal, return all the keys
     if len(set(scored_pairs.values())) == 1:
-        return scored_pairs.keys()
+        return list(scored_pairs.keys())
 
     #otherwise, return the highest one
     elif len(set(scored_pairs.values())) > 1:
@@ -250,21 +246,23 @@ if __name__=='__main__':
             while len(overlaps) > 1:
                 scored_pairs = make_score_dict(current, overlaps)
                 best_pair = pick_best_matches(scored_pairs)
-                print(best_pair)
+                #print(best_pair)
 
-#                 while len(best_pair) > 1:
-#                     path = list(best_pair).pop(0)
-#                     tup = directional(path[0], path[1])
-# #                    printer(tup)
-#                 else:
-#                     if len(best_pair) == 1:
-#                         tup = directional(list(best_pair)[0], list(best_pair)[1]) #should fix this
-# #                        printer(tup)
-#
-#             else:
-#                 if len(overlaps) == 1:
-#                     tup = directional(current, overlaps[0])
-# #                    printer(tup)
+                while len(best_pair) > 2:
+                    node1 = best_pair.pop(0)
+                    node2 = best_pair.pop(0)
+                    tup = directional(node1, node2)
+#                    printer(tup)
+                else:
+                    if len(best_pair) == 2:
+                        print(best_pair)
+                        tup = directional(best_pair[0], best_pair[1]) #should fix this
+#                        printer(tup)
+
+            else:
+                if len(overlaps) == 1:
+                    tup = directional(current, overlaps[0])
+#                    printer(tup)
 
         except StopIteration:
             break

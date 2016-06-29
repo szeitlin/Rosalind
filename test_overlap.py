@@ -8,7 +8,8 @@ from overlap import (overlap,
                      compare_multiple,
                      compare_base_counts,
                      make_score_dict,
-                     pick_best_matches)
+                     pick_best_matches,
+                     get_base_counts)
 
 from gc_content import parse_data
 
@@ -55,7 +56,10 @@ class TestMultipleOverlap(unittest.TestCase):
 
         self.assertEqual(expected, actual, msg='{0},{1}'.format(expected, actual))
 
-    def test_compare_base_counts(self):
+    def test_compare_base_count_sums(self):
+        """
+        simplest way only works for simplest examples.
+        """
         labeled = parse_nodes(self.data)
         sample = list(compare_multiple(labeled))[0]
         current = sample[0]
@@ -63,6 +67,20 @@ class TestMultipleOverlap(unittest.TestCase):
         self.assertEqual(compare_base_counts(current, overlaps[0]), 1)
         self.assertEqual(compare_base_counts(current, overlaps[1]), 2)
         self.assertEqual(compare_base_counts(overlaps[0], overlaps[1]), 0)
+
+    def test_compare_base_count_scores_equal_lengths(self):
+        """
+        debugging to make this work better on longer sequences, where totals
+        are basically just reporting on sequence similarity, not matches.
+        """
+        ex1 = ('fake1', 'ATCGTAA')
+        ex2 = ('fake2', 'TAAGCAT')
+        self.assertEqual(compare_base_counts(ex1, ex2), 2)
+
+    def test_compare_base_count_scores_unequal_lengths(self):
+        ex1 = ('fake1', 'ATCGTAA')
+        ex2 = ('fake2', 'TAAGCATG')
+        self.assertEqual(compare_base_counts(ex1, ex2), 2)
 
     def test_make_score_dict(self):
         labeled = parse_nodes(self.data)
