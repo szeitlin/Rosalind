@@ -134,6 +134,7 @@ class TestMultipleOverlap(unittest.TestCase):
         self.assertEqual(name, 'Rosalind_3496')
         self.assertEqual(sequence,
         'ATGGCAGTCCGAGTTCACGAACCGAATACGTTTAATAGGTAGTCGCCACCACTTAGACGGGTTCTCGCCTATAGGGAACATTAAAGGCGTGGAATTCG')
+        self.assertEqual(len(self.big_data), 0)
 
 if __name__=='__main__':
     unittest.main()

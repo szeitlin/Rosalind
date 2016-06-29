@@ -292,6 +292,40 @@ def make_score_dict(current, overlaps):
 
     return scored_pairs
 
+def shortest_edges(score_dict):
+    """
+    Among sequences with nodes in common, take only the shortest edges
+    (and re-score the others?).
+
+    :param score_dict: format is {(name, name): score(int)}
+    :return: best_pairs (list of (name,name) tuples), rescore (list of (name, name) tuples)
+    """
+    best_pairs = [x for (x,y) in score_dict.items() if y==3]
+    rescore = [x for (x,y) in score_dict.items() if y != 3]
+
+    return best_pairs, rescore
+
+def get_rescore_from_labeled(rescore, data):
+    """
+    This should not be needed.
+    :param rescore: list of (name,name) tuples
+    :param data: raw data
+    :return: subset of labeled where all names in rescore are keys in labeled
+    """
+    labeled_list = list(parse_data(data))
+    labeled_dict = {x[0]:x[1] for x in labeled_list}
+
+    losers = dict()
+
+    for x in rescore:
+        losers[x[0]] = labeled.get(x[0])
+        losers[x[1]] = labeled.get(x[1])
+
+    #convert back to tuples for rescoring
+    underdogs = list(losers.items())
+
+    return underdogs
+
 def pick_best_matches(scored_pairs):
     """
     If scored_pairs have different scores, return the highest one.
@@ -334,12 +368,13 @@ if __name__=='__main__':
 
     labeled = list(parse_data(data))
     scored = compare_multiple(labeled, debug=True)
-    print(scored)
+    closest, rescore = shortest_edges(scored)
+    #print(scored)
 
     #to make a graph with Gephi:
-    # with open("overlaps.csv", 'w') as results:
-    #     for item in scored:
-    #         results.write("{};{}\n".format(item[0], item[1]))
+    with open("overlaps.csv", 'w') as results:
+        for item in closest:
+            results.write("{};{}\n".format(item[0], item[1]))
 
 
 
