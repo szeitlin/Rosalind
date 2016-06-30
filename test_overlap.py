@@ -5,7 +5,6 @@ from overlap import (overlap,
                      base_counts,
                      directional,
                      parse_nodes,
-                     compare_multiple,
                      compare_base_counts,
                      make_score_dict,
                      pick_best_matches,
@@ -65,6 +64,13 @@ class TestMultipleOverlap(unittest.TestCase):
         self.assertEqual(compare_base_counts(current, overlaps[0]), 1)
         self.assertEqual(compare_base_counts(current, overlaps[1]), 2)
         self.assertEqual(compare_base_counts(overlaps[0], overlaps[1]), 0)
+
+    def test_compare_base_count_scorelists(self):
+        a = ('Rosalind_3894', 'TACGTACCCGTAAGTTCATCTACATGTGTTGCAAAGGAAATATAAAACCCTATTCAAGATTTTTTAATATTCAATCAAATTCTCTCATGGCATGGT')
+        b = ('Rosalind_9028', 'TGGGTTCTTTAGGGTGCCGAATGAGTATAAAGTGCCCTCCGACATATTACCAGTTCGGCCATCCGTTTTGTACCTCTTATAGAGACTATTCACGG')
+        score_a = compare_base_counts(a,b)
+        score_b = compare_base_counts(b,a)
+        self.assertEqual(score_a, score_b)
 
     def test_compare_base_count_scores_equal_lengths(self):
         """

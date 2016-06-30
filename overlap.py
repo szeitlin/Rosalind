@@ -58,8 +58,6 @@ def directional(one, two):
 def compare_base_counts(one, two):
     """
     Get the base_counts and use it to score the maximum end overlap for two str.
-    Allow mismatch followed by match,
-    don't allow match followed by mismatch.
 
     :param one: tuple of name, seq
     :param two: tuple of name, seq
@@ -76,46 +74,18 @@ def compare_base_counts(one, two):
     i = -1
     scorelist = []
 
-    for j in range(min(one_len, two_len)):
+    for j in range(max(one_len, two_len)): #really want sequential runs, not total
         if counts1[i] != counts2[j]:
             if any([x > 0 for x in scorelist]):
-                break
+                 break
             else:
-                #penalty for mismatches, otherwise just get similarity
+            #penalty for mismatches, otherwise just get similarity
                 scorelist.append(-1)
 
         elif counts1[i] == counts2[j]:
             scorelist.append(1)
 
-    return sum(scorelist)
-
-def get_o3_overlap_only(one, two):
-    """
-    Instead of using base_counts to get maximum overlap,
-    just score the overlap of the 3 end bases.
-
-    :param one: tuple of name, seq
-    :param two: tuple of name, seq
-    :return: overlap score (int)
-    """
-    i = -1
-    scorelist = []
-
-    one_len = len(one[1])
-    two_len = len(two[1])
-
-    for j in range(3):
-        if one[1][i] != two[1][j]:
-            if any([x > 0 for x in scorelist]):
-                break
-            else:
-                #penalty for mismatches, otherwise just get similarity
-                scorelist.append(-1)
-
-        elif one[1][i] == two[1][j]:
-            scorelist.append(1)
-
-    return sum(scorelist)
+    return scorelist
 
 def get_base_counts(one, two):
     """
@@ -184,92 +154,92 @@ def base_totals(seq):
 
     return totals
 
-def compare_multiple(labeled, debug=False, unlimited=False):
+def make_score_dict(labeled, debug=False):
     """
-    Find overlaps across more than pairs of sequences.
-
-    unlimited option will get maximum overlap.
-    otherwise default looks at overlap of only 3 bases.
+    Find maximum overlap among a list of sequences.
 
     :param listofseq: list of tuples of (str, str) with name, seq
     :return: tuple of best match
 
-    >>> compare_multiple([('Rosalind_0498', 'AAATAAA'), ('Rosalind_2391', 'AAATTTT'),\
-    ('Rosalind_2323', 'TTTTCCC'), ('Rosalind_0442', 'AAATCCC'), ('Rosalind_5013', 'GGGTGGG')])
-    ('Rosalind_0498', 'AAATAAA'), [('Rosalind_2391', 'AAATTTT'), ('Rosalind_0442', 'AAATCCC')]
-
     """
     score_dict = dict()
+    whole_list = labeled.copy()
 
-    while len(labeled) >=2:
+    while len(labeled) >=1:
 
         current = labeled.pop(0)
         #print("current is {}".format(current))
 
-        for i in range(len(labeled)):
+        for i in range(len(whole_list)):
          #   print(score_dict)
-            x = labeled[i]
-         #   print("comparing to {}".format(x))
+            x = whole_list[i]
+            #print("comparing to {}".format(x))
 
-            if unlimited == True:
-                score1 = compare_base_counts(current, x)
-                score2 = compare_base_counts(x, current)
-            else:
-                score1 = get_o3_overlap_only(current, x)
-                score2 = get_o3_overlap_only(x, current)
+            score1 = compare_base_counts(current, x)
+            score2 = compare_base_counts(x, current)
 
-         #   print(current, x, score1)
-         #   print(x, current, score2)
+            #print(current, x, score1)
+            #print(x, current, score2)
 
-            lookup = current[0]
-
-            if score1 == score2:
-                if score1 <= 0:
-                    continue
-
-            if any(lookup in x for x in score_dict.keys()):
-                oldmatch = [x for x in score_dict.keys() if lookup in x]
-                oldscore = score_dict[oldmatch[0]]
-          #      print("found an existing score {}: {}".format(oldmatch, oldscore))
-
-                if (oldscore > score1) and (oldscore > score2):
-                    continue
-
-                elif oldscore:
-                    #if new scores are equal and better (unlikely)
-                    if (score1 == score2) and (score1 > oldscore):
-                       # print("equal and better!")
-                        del score_dict[oldmatch[0]] #remove the old match if it's lower
-                        score_dict[(lookup, x[0])] = score1
-
-                    #if new scores are unequal
-                    elif (score1 > oldscore) or (score2 > oldscore):
-                       # print("one new score is better!")
-                        del score_dict[oldmatch[0]]
-                        if score1 > oldscore:
-                            score_dict[(lookup, x[0])] = score1
-                        elif score2 > oldscore:
-                            score_dict[(x[0], lookup)] = score2
-
-                    #don't delete them if they're at least as good
-                    elif (score1 == oldscore) or (score2 == oldscore):
-                       # print("scores are at least as good as before!")
-                        if score1 == oldscore:
-                            score_dict[(lookup, x[0])] = score1
-                        elif score2 == oldscore:
-                            score_dict[(x[0], lookup)] = score2
-
-            elif (score1 > score2) and (score1 > 0):
-                score_dict[(lookup, x[0])] = score1
-            elif (score1 < score2) and (score2 > 0):
-                score_dict[(x[0], lookup)] = score2
+            if score1 > 0:
+                score_dict[(current,x)] = score1
+                print(current, x, score1)
+            if score2 > 0:
+                score_dict[(x, current)] = score2
+                print(x, current, score2)
 
     if debug==True:
         return score_dict
     else:
         return list(score_dict.keys())
 
-def make_score_dict(current, overlaps):
+    # def complicated_comparisons():
+    #     lookup = current[0]
+    #
+    #     if score1 == score2:
+    #         if score1 <= 0:
+    #             continue
+    #
+    #     if any(lookup in x for x in score_dict.keys()):
+    #         oldmatch = [x for x in score_dict.keys() if lookup in x]
+    #         oldscore = score_dict[oldmatch[0]]
+    #         print("found an existing score {}: {}".format(oldmatch, oldscore))
+    #
+    #         if (oldscore > score1) and (oldscore > score2):
+    #             continue
+    #
+    #         elif oldscore:
+    #             #if new scores are equal and better (unlikely)
+    #             if (score1 == score2) and (score1 > oldscore):
+    #                # print("equal and better!")
+    #                 del score_dict[oldmatch[0]] #remove the old match if it's lower
+    #                 score_dict[(lookup, x[0])] = score1
+    #
+    #             #if new scores are unequal
+    #             elif (score1 > oldscore) or (score2 > oldscore):
+    #                # print("one new score is better!")
+    #                 del score_dict[oldmatch[0]]
+    #                 if score1 > oldscore:
+    #                     score_dict[(lookup, x[0])] = score1
+    #                 elif score2 > oldscore:
+    #                     score_dict[(x[0], lookup)] = score2
+    #
+    #             #don't delete them if they're at least as good
+    #             elif (score1 == oldscore) or (score2 == oldscore):
+    #                 print("scores are at least as good as before!")
+    #                 if score1 == oldscore:
+    #                     score_dict[(lookup, x[0])] = score1
+    #                 elif score2 == oldscore:
+    #                     score_dict[(x[0], lookup)] = score2
+    #
+    #     elif (score1 > score2) and (score1 > 0):
+    #         score_dict[(lookup, x[0])] = score1
+    #     elif (score1 < score2) and (score2 > 0):
+    #         score_dict[(x[0], lookup)] = score2
+
+
+
+def old_make_score_dict(current, overlaps):
     """
     Score multiple overlaps for ranking best matches.
 
@@ -367,13 +337,13 @@ if __name__=='__main__':
         data = f.readlines()
 
     labeled = list(parse_data(data))
-    scored = compare_multiple(labeled, debug=True)
-    closest, rescore = shortest_edges(scored)
-    #print(scored)
+    scored = make_score_dict(labeled, debug=True)
+    #closest, rescore = shortest_edges(scored)
+    print(scored)
 
     #to make a graph with Gephi:
     with open("overlaps.csv", 'w') as results:
-        for item in closest:
+        for item in scored:
             results.write("{};{}\n".format(item[0], item[1]))
 
 
