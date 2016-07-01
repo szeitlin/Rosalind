@@ -1,7 +1,7 @@
 __author__ = 'szeitlin'
 
-from collections import defaultdict
-import operator
+import numpy as np
+
 from gc_content import parse_data
 
 def get_o3_overlap(one, two):
@@ -13,69 +13,61 @@ def get_o3_overlap(one, two):
     :param two: tuple of name, seq
     :return: overlap score (int)
     """
-    i = -1
-    scorelist = []
+    if one == two:
+        return
 
-    one_len = len(one[1])
-    two_len = len(two[1])
+    a = np.array([x for x in one[1]])
+    b = np.vstack([x for x in two[1]])
+    compared = a==b
 
-    for j in range(3):
-        if one[1][i] != two[1][j]:
-            if any([x > 0 for x in scorelist]):
-                break
-            else:
-                #penalty for mismatches, otherwise just get similarity
-                scorelist.append(-1)
+    endsmatch = np.diagonal(compared, offset=-4) #offset may require calculation?
 
-        elif one[1][i] == two[1][j]:
-            scorelist.append(1)
+    if endsmatch.all() == True:
+        print(one[0], two[0])
 
-    return sum(scorelist)
+    otherendsmatch = np.diagonal(compared, offset=3)
 
-def get_o3_scores(labeled, debug=False):
+    if otherendsmatch.all() == True:
+        print(two[0], one[0]) #will have to check on direction
+
+    else:
+        print(" ")
+
+def compare_all_pairs_both_ways(labeled):
     """
-    Score matches using only the overlap of the 3 end bases.
-    Keep only those with score of 3 (the max).
+    This needs revision to deal with duplicates and self-matches.
 
-    :param labeled: list of (name,seq) pairs
-    :return: score_dict
+    :param labeled:
+    :return:
     """
-    score_dict = dict()
-
     whole_list = labeled.copy()
 
-    while len(labeled) >= 1:
+    while len(labeled) >=1:
 
-        current = labeled.pop(0)
+        current = labeled.pop()
+        #print("current is {}".format(current))
 
         for i in range(len(whole_list)):
             x = whole_list[i]
+            #print("comparing to {}".format(x))
 
-            score1 = get_o3_overlap(current, x)
-            score2 = get_o3_overlap(x, current)
+            get_o3_overlap(current, x)
 
-            if score1 == 3:
-                score_dict[(current[0],x[0])] = score1
-            if score2 == 3:
-                score_dict[(x[0], current[0])] = score2
-
-    if debug==True:
-        return score_dict
-    else:
-        return list(score_dict.keys())
 
 
 if __name__=='__main__':
     # import doctest
     # doctest.testmod()
 
-    with open('rosalind_grph.txt', 'r') as f:
+    with open('overlap_sample.txt', 'r') as f:
         data = f.readlines()
 
     labeled = list(parse_data(data))
-    scored = get_o3_scores(labeled)
 
-    #to make a graph with Gephi:
-    with open("overlaps.csv", 'w') as results:
-        for item in scored:
-            results.write("{} {}\n".format(item[0], item[1]))
+    compare_all_pairs_both_ways(labeled)
+
+
+    # #to make a graph with Gephi:
+    # with open("overlaps.csv", 'w') as results:
+    #     for item in scored:
+    #         results.write("{} {}\n".format(item[0], item[1]))

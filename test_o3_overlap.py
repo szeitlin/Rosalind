@@ -32,15 +32,14 @@ class TestScorer(unittest.TestCase):
         expected = [('Rosalind_0498', 'Rosalind_2391'), ('Rosalind_2391', 'Rosalind_2323'), ('Rosalind_0498', 'Rosalind_0442')]
         self.assertEqual(set(expected), set(actual), msg='{0},{1}'.format(expected, actual))
 
-    @unittest.skip("for development purposes only")
     def test_get_o3_scores_short(self):
         self.longMessage = True #for debugging without truncation
         labeled = parse_nodes(self.data)
         print(labeled)
-        actual = get_o3_scores(labeled)
-        expected = {(('Rosalind_2391', 'AAATTTT'), ('Rosalind_2323', 'TTTTCCC')): 3,
-                    (('Rosalind_0498', 'AAATAAA'), ('Rosalind_2391', 'AAATTTT')): 3,
-                    (('Rosalind_0498', 'AAATAAA'), ('Rosalind_0442', 'AAATCCC')): 3}
+        actual = get_o3_overlap(labeled)
+        expected = [('Rosalind_2391', 'Rosalind_2323'),
+                    ('Rosalind_0498', 'Rosalind_2391'),
+                    ('Rosalind_0498', 'Rosalind_0442')]
         self.assertEqual(set(expected), set(actual), msg='{0},{1}'.format(expected, actual))
 
     def test_get_o3_scores_long(self):

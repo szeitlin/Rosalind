@@ -2,6 +2,7 @@ __author__ = 'szeitlin'
 
 import operator
 from gc_content import parse_data
+from sequential_comparison import longest_overlap
 
 def overlap(counts1, counts2):
     """
@@ -167,76 +168,26 @@ def make_score_dict(labeled, debug=False):
 
     while len(labeled) >=1:
 
-        current = labeled.pop(0)
-        #print("current is {}".format(current))
+        current = labeled.pop()
+        print("current is {}".format(current))
 
-        for i in range(len(whole_list)):
-         #   print(score_dict)
+        for i in range(1, 2):
+            print(score_dict)
             x = whole_list[i]
-            #print("comparing to {}".format(x))
+            print("comparing to {}".format(x))
 
-            score1 = compare_base_counts(current, x)
-            score2 = compare_base_counts(x, current)
+            counts1, counts2 = get_base_counts(current, x)
+            score = longest_overlap(counts1, counts2)
 
-            #print(current, x, score1)
-            #print(x, current, score2)
+            print(current, x, score)
 
-            if score1 > 0:
-                score_dict[(current,x)] = score1
-                print(current, x, score1)
-            if score2 > 0:
-                score_dict[(x, current)] = score2
-                print(x, current, score2)
+            if score > 0:
+                score_dict[(current,x)] = score
 
     if debug==True:
         return score_dict
     else:
         return list(score_dict.keys())
-
-    # def complicated_comparisons():
-    #     lookup = current[0]
-    #
-    #     if score1 == score2:
-    #         if score1 <= 0:
-    #             continue
-    #
-    #     if any(lookup in x for x in score_dict.keys()):
-    #         oldmatch = [x for x in score_dict.keys() if lookup in x]
-    #         oldscore = score_dict[oldmatch[0]]
-    #         print("found an existing score {}: {}".format(oldmatch, oldscore))
-    #
-    #         if (oldscore > score1) and (oldscore > score2):
-    #             continue
-    #
-    #         elif oldscore:
-    #             #if new scores are equal and better (unlikely)
-    #             if (score1 == score2) and (score1 > oldscore):
-    #                # print("equal and better!")
-    #                 del score_dict[oldmatch[0]] #remove the old match if it's lower
-    #                 score_dict[(lookup, x[0])] = score1
-    #
-    #             #if new scores are unequal
-    #             elif (score1 > oldscore) or (score2 > oldscore):
-    #                # print("one new score is better!")
-    #                 del score_dict[oldmatch[0]]
-    #                 if score1 > oldscore:
-    #                     score_dict[(lookup, x[0])] = score1
-    #                 elif score2 > oldscore:
-    #                     score_dict[(x[0], lookup)] = score2
-    #
-    #             #don't delete them if they're at least as good
-    #             elif (score1 == oldscore) or (score2 == oldscore):
-    #                 print("scores are at least as good as before!")
-    #                 if score1 == oldscore:
-    #                     score_dict[(lookup, x[0])] = score1
-    #                 elif score2 == oldscore:
-    #                     score_dict[(x[0], lookup)] = score2
-    #
-    #     elif (score1 > score2) and (score1 > 0):
-    #         score_dict[(lookup, x[0])] = score1
-    #     elif (score1 < score2) and (score2 > 0):
-    #         score_dict[(x[0], lookup)] = score2
-
 
 
 def old_make_score_dict(current, overlaps):
@@ -342,9 +293,9 @@ if __name__=='__main__':
     print(scored)
 
     #to make a graph with Gephi:
-    with open("overlaps.csv", 'w') as results:
-        for item in scored:
-            results.write("{};{}\n".format(item[0], item[1]))
+    # with open("overlaps.csv", 'w') as results:
+    #     for item in scored:
+    #         results.write("{};{}\n".format(item[0], item[1]))
 
 
 

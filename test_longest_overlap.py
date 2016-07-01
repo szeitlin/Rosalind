@@ -12,6 +12,7 @@ from overlap import (overlap,
 
 from gc_content import parse_data
 
+from o3_overlap import get_o3_overlap
 from sequential_comparison import longest_overlap
 
 import operator
@@ -43,10 +44,30 @@ class TestMultipleOverlap(unittest.TestCase):
         shorter, longer = [x[0] for x in sorted(lengths.items(), key=operator.itemgetter(1))]
         self.assertLess(len(shorter), len(longer))
 
-    def test_make_score_dict(self):
+    def test_known_3bp_overlap(self):
+        a= ('a', 'ACCGAGCGCCACCATGGTGAGCAAGGGCGAGGAGCTGTTCACCGGGGTGGTGCCCATCCT')
+        b = ('b', 'CCTGGTCGAGCTGGACGGCGACGTAAACGGCCACAAGTTCAGCGTGTCCGGCGAGGGCGA')
+        counts1 = get_o3_overlap(a, b)
+        counts2 = get_o3_overlap(b, a)
+        self.assertEqual(counts1, 1)
+        self.assertEqual(counts2, 0)
+
+    def test_known_longer_overlap(self):
+        a =('a', 'ACCGAGCGCCACCATGGTGAGCAAGGGCGAGGAGCTGTTCACCGGGGTGGTGCCCATCCTGGTCGAGCTGGACGGCGACGTAAA')
+        b = ('b', 'GGTCGAGCTGGACGGCGACGTAAACGGCCACAAGTTCAGCGTGTCCGGCGAGGGCGAGGG')
+        counts1, counts2 = get_base_counts(a, b)
+        forward, reverse = longest_overlap(counts1, counts2)
+        self.assertGreater(forward, 1, msg= reverse)
+
+    @unittest.skip("not working")
+    def test_make_score_dict_entry(self):
         labeled = parse_nodes(self.data)
-        scored = make_score_dict(labeled, debug=True)
-        self.assertEqual(scored, {})
+        whole_list = labeled.copy()
+        current = labeled.pop(0)
+        x = whole_list[1]
+        counts1, counts2 = get_base_counts(current, x)
+        forward, reverse = longest_overlap(counts1, counts2)
+        self.assertEqual(forward, 1)
 
 if __name__=='__main__':
     unittest.main()
