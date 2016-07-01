@@ -4,7 +4,7 @@ import numpy as np
 
 from gc_content import parse_data
 
-def get_o3_overlap(one, two):
+def get_o3_overlap(one, two, debug=False):
     """
     Instead of using base_counts to get maximum overlap,
     just score the overlap of the 3 end bases.
@@ -20,15 +20,28 @@ def get_o3_overlap(one, two):
     b = np.vstack([x for x in two[1]])
     compared = a==b
 
-    endsmatch = np.diagonal(compared, offset=-4) #offset may require calculation?
+    offset = len(a) - 3 #3 is the length of overlap we want
+    endsmatch = np.diagonal(compared, offset=-(offset-1)) #not sure about this one
 
-    if endsmatch.all() == True:
-        return (two[0], one[0])
+    if len(endsmatch) != 3:
+        return
 
-    otherendsmatch = np.diagonal(compared, offset=3)
+    elif endsmatch.all() == True:
+        if debug==True:
+            return (two, one)
+        else:
+            return (two[0], one[0])
 
-    if otherendsmatch.all() == True:
-        return (one[0], two[0]) #will have to check on direction
+    otherendsmatch = np.diagonal(compared, offset=offset)
+
+    if len(otherendsmatch) != 3:
+        return
+
+    elif otherendsmatch.all() == True:
+        if debug==True:
+            return (one, two)
+        else:
+            return (one[0], two[0])
 
     else:
         return
@@ -57,7 +70,7 @@ def compare_all_pairs_both_ways(labeled):
                 if result not in matches:
                     matches.append(result)
 
-    print(matches)
+    #print(matches)
 
     return matches
 
@@ -65,15 +78,15 @@ if __name__=='__main__':
     # import doctest
     # doctest.testmod()
 
-    with open('overlap_sample.txt', 'r') as f:
+    with open('rosalind_grph.txt', 'r') as f:
         data = f.readlines()
 
     labeled = list(parse_data(data))
 
-    compare_all_pairs_both_ways(labeled)
+    matches = compare_all_pairs_both_ways(labeled)
 
 
-    # #to make a graph with Gephi:
-    # with open("overlaps.csv", 'w') as results:
-    #     for item in scored:
-    #         results.write("{} {}\n".format(item[0], item[1]))
+    #to make a graph with Gephi:
+    with open("overlaps.csv", 'w') as results:
+        for item in matches:
+            results.write("{} {}\n".format(item[0], item[1]))
