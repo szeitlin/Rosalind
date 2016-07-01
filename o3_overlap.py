@@ -23,15 +23,15 @@ def get_o3_overlap(one, two):
     endsmatch = np.diagonal(compared, offset=-4) #offset may require calculation?
 
     if endsmatch.all() == True:
-        print(one[0], two[0])
+        return (two[0], one[0])
 
     otherendsmatch = np.diagonal(compared, offset=3)
 
     if otherendsmatch.all() == True:
-        print(two[0], one[0]) #will have to check on direction
+        return (one[0], two[0]) #will have to check on direction
 
     else:
-        print(" ")
+        return
 
 def compare_all_pairs_both_ways(labeled):
     """
@@ -41,6 +41,7 @@ def compare_all_pairs_both_ways(labeled):
     :return:
     """
     whole_list = labeled.copy()
+    matches = []
 
     while len(labeled) >=1:
 
@@ -51,9 +52,14 @@ def compare_all_pairs_both_ways(labeled):
             x = whole_list[i]
             #print("comparing to {}".format(x))
 
-            get_o3_overlap(current, x)
+            result = get_o3_overlap(current, x)
+            if result is not None:
+                if result not in matches:
+                    matches.append(result)
 
+    print(matches)
 
+    return matches
 
 if __name__=='__main__':
     # import doctest
