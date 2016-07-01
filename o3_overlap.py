@@ -21,7 +21,7 @@ def get_o3_overlap(one, two, debug=False):
     compared = a==b
 
     offset = len(a) - 3 #3 is the length of overlap we want
-    endsmatch = np.diagonal(compared, offset=-(offset-1)) #not sure about this one
+    endsmatch = np.diagonal(compared, offset=-(offset-1))
 
     if len(endsmatch) != 3:
         return
@@ -48,29 +48,31 @@ def get_o3_overlap(one, two, debug=False):
 
 def compare_all_pairs_both_ways(labeled):
     """
-    This needs revision to deal with duplicates and self-matches.
+    This is a little slower because it's doing
+    10100 instead of 10000.
 
-    :param labeled:
-    :return:
+    :param labeled: list of tuples (name, seq)
+    :return: list of tuples (name, name) of matches
     """
+
     whole_list = labeled.copy()
     matches = []
 
     while len(labeled) >=1:
 
         current = labeled.pop()
+
         #print("current is {}".format(current))
 
         for i in range(len(whole_list)):
             x = whole_list[i]
+
             #print("comparing to {}".format(x))
 
             result = get_o3_overlap(current, x)
             if result is not None:
                 if result not in matches:
                     matches.append(result)
-
-    #print(matches)
 
     return matches
 
