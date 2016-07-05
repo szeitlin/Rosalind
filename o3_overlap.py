@@ -1,6 +1,7 @@
 __author__ = 'szeitlin'
 
 import numpy as np
+from collections import defaultdict
 import itertools
 
 from gc_content import parse_data
@@ -31,7 +32,7 @@ def get_o3_overlap(one, two, debug=False):
 
     elif (len(endsmatch) == 3) and (endsmatch.all() == True):
         if debug==True:
-            return (one[1], two[1])
+            return (one, two)
         else:
             return (one[0], two[0])
 
@@ -40,24 +41,37 @@ def get_o3_overlap(one, two, debug=False):
 
     elif (len(otherendsmatch) == 3) and (otherendsmatch.all() == True):
         if debug==True:
-            return (two[1], one[1])
+            return (two, one)
         else:
             return (two[0], one[0])
 
     else:
         return
 
-def compare_all_pairs_both_ways(labeled):
+def just_check_ends(one, two):
+    front1 = one[1][0:3]
+    end1 = one[1][-3:]
+    front2 = two[1][0:3]
+    end2 = two[1][-3:]
+
+    if end1==front2:
+        return (one, two)
+    elif end2 == front1:
+        return (two, one)
+    else:
+        return
+
+def compare_all_pairs_both_ways(labeled, debug=False):
     """
     This is a little slower because it's doing
     10100 instead of 10000.
 
     :param labeled: list of tuples (name, seq)
-    :return: list of tuples (name, name) of matches
+    :return: adjacency dict of {(name,seq): [list of (name,seq) tuples]}
     """
 
     whole_list = labeled.copy()
-    matches = []
+    matches = defaultdict(list)
 
     while len(labeled) >=1:
 
@@ -70,10 +84,20 @@ def compare_all_pairs_both_ways(labeled):
 
             #print("comparing to {}".format(x))
 
-            result = get_o3_overlap(current, x, debug=True)
+            #result = get_o3_overlap(current, x, debug=True)
+            result = just_check_ends(current, x)
+
+            #avoid getting duplicates!
             if result is not None:
-                if result not in matches:
-                    matches.append(result)
+                if result[0] not in matches:
+                    matches[result[0]].append(result[1])
+                elif result[0] in matches:
+                    if result[1] not in matches[result[0]]:
+                        matches[result[0]].append(result[1])
+
+    if debug==True:
+        for item in matches:
+            print(item[1], [x[1] for x in matches[item]])
 
     return matches
 
@@ -88,7 +112,8 @@ def itertools_combinations(labeled):
 
     pairs = itertools.permutations(labeled, 2) #all possible orderings
     for pair in list(pairs):
-        result = get_o3_overlap(pair[0], pair[1], debug=True)
+        #result = get_o3_overlap(pair[0], pair[1], debug=True)
+        result = just_check_ends(pair[0], pair[1])
         if result is not None:
             if result not in matches:
                 matches.append(result)
@@ -107,7 +132,7 @@ def get_all_ends(labeled):
 
     for item in labeled:
         front = item[1][0:3]
-        end = item[1][-3::]
+        end = item[1][-3:]
         if front not in frontdict:
             frontdict[front]= 1
         elif front in frontdict:
@@ -117,24 +142,47 @@ def get_all_ends(labeled):
         elif end in enddict:
             enddict[end] +=1
 
+
     print(frontdict)
     print(enddict)
 
     paircount = 0
-    for x,y in zip(sorted(frontdict), sorted(enddict)):
-        #some more sophisticated checking here
-        #if key x == key y:
-            # if x.value > 1 or y.value > 1:
-            #     make a pair
-            #     subtract 1 from each and
-            #     keep whatever's leftover for further comparisons' \
-            # otherwise if x.value == 1 and y.value == 1:
-            #     make a pair
+
+    for key in frontdict.keys():
+        if key in enddict:
+            paircount += frontdict[key] & enddict[key]
 
     return paircount
 
 
+def matches_to_graph(matches):
+    """
+    extract pairs from adjacency dict, and write sequences to a file
 
+    :param matches: adjacency dict of sequences (str): [list of str]
+    :return: pairs formatted for Gephi, i.e. node1;node2 (separated by
+    semicolon, 1 pair per line)
+    """
+    with open("overlaps.csv", 'w') as results:
+        for item in matches:
+            for val in matches[item]:
+                results.write("{};{}\n".format(item[1], val[1]))
+
+def matches_to_rosalind(matches):
+    """
+    extract pairs from adjacency dict,
+    remove any directed loops (nodes that point to themselves)
+    and write names to a file
+
+    :param matches: adjacency dict of {(name,seq): [list of (name,seq) tuples]}
+    :return: pairs formatted for Rosalind, i.e. node1 name only node2 name only
+    (separated by 1 space, 1 pair per line)
+    """
+    with open("overlaps.txt", 'w') as results:
+        for item in matches:
+            for val in matches[item]:
+                if item[0] != val[0]: #check for directed loops
+                    results.write("{} {}\n".format(item[0], val[0]))
 
 
 if __name__=='__main__':
@@ -147,14 +195,15 @@ if __name__=='__main__':
     labeled = list(parse_data(data))
     expected_pairs = get_all_ends(labeled)
 
-    #matches = compare_all_pairs_both_ways(labeled)
+    matches = compare_all_pairs_both_ways(labeled, debug=True)
 
-    matches = itertools_combinations(labeled)
+    #matches = itertools_combinations(labeled)
 
     if len(matches) != expected_pairs:
-        print("warning! expected {} but only found {}".format(expected_pairs, len(matches)))
+        print("warning! expected {} but found {}".format(expected_pairs, len(matches)))
 
     #to make a graph with Gephi:
-    with open("overlaps.csv", 'w') as results:
-        for item in matches:
-            results.write("{};{}\n".format(item[0], item[1]))
+    matches_to_graph(matches)
+
+    #to make results file for Rosalind
+    matches_to_rosalind(matches)
