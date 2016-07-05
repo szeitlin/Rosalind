@@ -1,6 +1,7 @@
 __author__ = 'szeitlin'
 
 import numpy as np
+import itertools
 
 from gc_content import parse_data
 
@@ -69,12 +70,72 @@ def compare_all_pairs_both_ways(labeled):
 
             #print("comparing to {}".format(x))
 
-            result = get_o3_overlap(current, x) # debug=True)
+            result = get_o3_overlap(current, x, debug=True)
             if result is not None:
                 if result not in matches:
                     matches.append(result)
 
     return matches
+
+def itertools_combinations(labeled):
+    """
+    Try this to do all 100,000 comparisons.
+
+    :param labeled:
+    :return:
+    """
+    matches = []
+
+    pairs = itertools.permutations(labeled, 2) #all possible orderings
+    for pair in list(pairs):
+        result = get_o3_overlap(pair[0], pair[1], debug=True)
+        if result is not None:
+            if result not in matches:
+                matches.append(result)
+
+    return matches
+
+def get_all_ends(labeled):
+    """
+    helper for making sure all possible matches are identified
+
+    :param labeled: list of name, seq
+    :return: dict of {last three bases (str): counts}
+    """
+    enddict = dict()
+    frontdict = dict()
+
+    for item in labeled:
+        front = item[1][0:3]
+        end = item[1][-3::]
+        if front not in frontdict:
+            frontdict[front]= 1
+        elif front in frontdict:
+            frontdict[front] +=1
+        if end not in enddict:
+            enddict[end] = 1
+        elif end in enddict:
+            enddict[end] +=1
+
+    print(frontdict)
+    print(enddict)
+
+    paircount = 0
+    for x,y in zip(sorted(frontdict), sorted(enddict)):
+        #some more sophisticated checking here
+        #if key x == key y:
+            # if x.value > 1 or y.value > 1:
+            #     make a pair
+            #     subtract 1 from each and
+            #     keep whatever's leftover for further comparisons' \
+            # otherwise if x.value == 1 and y.value == 1:
+            #     make a pair
+
+    return paircount
+
+
+
+
 
 if __name__=='__main__':
     # import doctest
@@ -84,9 +145,14 @@ if __name__=='__main__':
         data = f.readlines()
 
     labeled = list(parse_data(data))
+    expected_pairs = get_all_ends(labeled)
 
-    matches = compare_all_pairs_both_ways(labeled)
+    #matches = compare_all_pairs_both_ways(labeled)
 
+    matches = itertools_combinations(labeled)
+
+    if len(matches) != expected_pairs:
+        print("warning! expected {} but only found {}".format(expected_pairs, len(matches)))
 
     #to make a graph with Gephi:
     with open("overlaps.csv", 'w') as results:

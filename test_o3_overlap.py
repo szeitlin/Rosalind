@@ -47,6 +47,12 @@ class TestScorer(unittest.TestCase):
         result = get_o3_overlap(a, b)
         self.assertEqual(result, None)
 
+class TestItertoolsCombinations(unittest.TestCase):
+
+    def get_pairs_returns_expected_number(self):
+        pass
+
+
 class TestParser(unittest.TestCase):
 
     def setUp(cls):
