@@ -65,17 +65,21 @@ def count_sequential(listofbool):
     count = 0
     max_seq = 0
 
-    if listofbool[0] == False: #must match on the ends
-        return 0
+    if len(listofbool) > 0:
+        if listofbool[0] == False: #must match on the ends
+            return 0
+
+        else:
+            for x in listofbool:
+                if x!=True:
+                    max_seq = count
+                    count = 0
+                elif x==True:
+                    count += 1
+
+            max_seq = count
+
+            return max_seq
 
     else:
-        for x in listofbool:
-            if x!=True:
-                max_seq = count
-                count = 0
-            elif x==True:
-                count += 1
-
-        max_seq = count
-
-        return max_seq
+        return 0
