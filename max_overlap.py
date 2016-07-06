@@ -120,10 +120,20 @@ def compare_all_pairs_both_ways(labeled, debug=False):
                         matches[result[0]].append(result[1:])
 
     if debug==True:
-        for item in matches:
-            print(item[1], [x[1] for x in matches[item]])
+        for k,v in matches.items():
+            print(k,v)
+            #print(item[1], [x[1] for x in matches[item]])
 
     return matches
+
+def align_matches(matches):
+    """
+    Connect matches into one big superstring.
+
+    :param matches: list of (name, seq) tuples
+    :return: one big superstring
+    """
+    pass
 
 
 if __name__=='__main__':
@@ -132,7 +142,7 @@ if __name__=='__main__':
         data = f.readlines()
 
     labeled = list(parse_data(data))
-    expected_pairs=2
+    expected_pairs=3
 
     matches = compare_all_pairs_both_ways(labeled, debug=True)
 
