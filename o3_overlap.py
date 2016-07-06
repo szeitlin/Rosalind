@@ -6,47 +6,7 @@ import itertools
 
 from gc_content import parse_data
 
-def get_o3_overlap(one, two, debug=False):
-    """
-    Instead of using base_counts to get maximum overlap,
-    just score the overlap of the 3 end bases.
 
-    :param one: tuple of name, seq
-    :param two: tuple of name, seq
-    :return: overlap score (int)
-    """
-    if one == two:
-        return
-
-    a = np.array([x for x in one[1]])
-    b = np.vstack([x for x in two[1]])
-    compared = a==b
-
-    offset = len(a) - 3 #3 is the length of overlap we want
-    otheroffset = len(b) - 3
-    endsmatch = np.diagonal(compared, offset=otheroffset)
-    otherendsmatch = np.diagonal(compared, offset=offset)
-
-    if len(endsmatch) != 3:
-        return
-
-    elif (len(endsmatch) == 3) and (endsmatch.all() == True):
-        if debug==True:
-            return (one, two)
-        else:
-            return (one[0], two[0])
-
-    if len(otherendsmatch) != 3:
-        return
-
-    elif (len(otherendsmatch) == 3) and (otherendsmatch.all() == True):
-        if debug==True:
-            return (two, one)
-        else:
-            return (two[0], one[0])
-
-    else:
-        return
 
 def just_check_ends(one, two):
     front1 = one[1][0:3]
@@ -166,7 +126,8 @@ def matches_to_graph(matches):
     with open("overlaps.csv", 'w') as results:
         for item in matches:
             for val in matches[item]:
-                results.write("{};{}\n".format(item[1], val[1]))
+                if item[0] != val[0]: #check for directed loops
+                    results.write("{};{}\n".format(item[1], val[1]))
 
 def matches_to_rosalind(matches):
     """
@@ -189,7 +150,7 @@ if __name__=='__main__':
     # import doctest
     # doctest.testmod()
 
-    with open('rosalind_grph.txt', 'r') as f:
+    with open('rosalind_grph_9_dataset.txt', 'r') as f:
         data = f.readlines()
 
     labeled = list(parse_data(data))
