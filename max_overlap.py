@@ -1,8 +1,9 @@
 __author__ = 'szeitlin'
 
+from collections import defaultdict
 import numpy as np
 
-def max_overlap(one, two, debug=False):
+def max_overlap(one, two):
     """
     Find the diagonal of the comparison matrix with the maximum overlap
 
@@ -51,6 +52,7 @@ def max_overlap(one, two, debug=False):
 
 def count_sequential(listofbool):
     """
+    Helper for max_overlap.
     Easy to count total True values using built-in on list.
     This counts longest sequential run of True values.
 
@@ -83,3 +85,43 @@ def count_sequential(listofbool):
 
     else:
         return 0
+
+def compare_all_pairs_both_ways(labeled, debug=False):
+    """
+    This is a little slower because it's doing
+    10100 instead of 10000.
+
+    :param labeled: list of tuples (name, seq)
+    :return: adjacency dict of {(name,seq): [list of (name,seq) tuples]}
+    """
+
+    whole_list = labeled.copy()
+    matches = defaultdict(list)
+
+    while len(labeled) >=1:
+
+        current = labeled.pop()
+
+        #print("current is {}".format(current))
+
+        for i in range(len(whole_list)):
+            x = whole_list[i]
+
+            #print("comparing to {}".format(x))
+
+            #result = get_o3_overlap(current, x, debug=True)
+            result = max_overlap(current, x)
+
+            #avoid getting duplicates!
+            if result is not None:
+                if result[0] not in matches:
+                    matches[result[0]].append(result[1])
+                elif result[0] in matches:
+                    if result[1] not in matches[result[0]]:
+                        matches[result[0]].append(result[1])
+
+    if debug==True:
+        for item in matches:
+            print(item[1], [x[1] for x in matches[item]])
+
+    return matches

@@ -7,7 +7,6 @@ import itertools
 from gc_content import parse_data
 
 
-
 def just_check_ends(one, two):
     front1 = one[1][0:3]
     end1 = one[1][-3:]
@@ -63,7 +62,7 @@ def compare_all_pairs_both_ways(labeled, debug=False):
 
 def itertools_combinations(labeled):
     """
-    Try this to do all 100,000 comparisons.
+    Try this to for comparisons.
 
     :param labeled:
     :return:
