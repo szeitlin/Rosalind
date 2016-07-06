@@ -3,6 +3,9 @@ __author__ = 'szeitlin'
 from collections import defaultdict
 import numpy as np
 
+from gc_content import parse_data
+from o3_overlap import matches_to_rosalind, matches_to_graph
+
 def max_overlap(one, two):
     """
     Find the diagonal of the comparison matrix with the maximum overlap
@@ -47,8 +50,7 @@ def max_overlap(one, two):
 
         #print(bestsofar)
 
-    return bestsofar
-
+    return one, two, bestsofar
 
 def count_sequential(listofbool):
     """
@@ -88,9 +90,6 @@ def count_sequential(listofbool):
 
 def compare_all_pairs_both_ways(labeled, debug=False):
     """
-    This is a little slower because it's doing
-    10100 instead of 10000.
-
     :param labeled: list of tuples (name, seq)
     :return: adjacency dict of {(name,seq): [list of (name,seq) tuples]}
     """
@@ -115,13 +114,35 @@ def compare_all_pairs_both_ways(labeled, debug=False):
             #avoid getting duplicates!
             if result is not None:
                 if result[0] not in matches:
-                    matches[result[0]].append(result[1])
+                    matches[result[0]].append(result[1:])
                 elif result[0] in matches:
                     if result[1] not in matches[result[0]]:
-                        matches[result[0]].append(result[1])
+                        matches[result[0]].append(result[1:])
 
     if debug==True:
         for item in matches:
             print(item[1], [x[1] for x in matches[item]])
 
     return matches
+
+
+if __name__=='__main__':
+
+    with open('CENPA_3chunks.txt', 'r') as f:
+        data = f.readlines()
+
+    labeled = list(parse_data(data))
+    expected_pairs=2
+
+    matches = compare_all_pairs_both_ways(labeled, debug=True)
+
+    #matches = itertools_combinations(labeled)
+
+    if len(matches) != expected_pairs:
+        print("warning! expected {} but found {}".format(expected_pairs, len(matches)))
+
+    #to make a graph with Gephi:
+    matches_to_graph(matches)
+
+    #to make results file for Rosalind
+    matches_to_rosalind(matches)
