@@ -91,7 +91,8 @@ def count_sequential(listofbool):
 def compare_all_pairs_both_ways(labeled, debug=False):
     """
     :param labeled: list of tuples (name, seq)
-    :return: adjacency dict of {(name,seq): [list of (name,seq) tuples]}
+    :return: adjacency dict
+    {(name,seq): [list of ((name,seq), (offset, overlap)) tuples]}
     """
 
     whole_list = labeled.copy()
