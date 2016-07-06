@@ -47,12 +47,12 @@ class TestMultipleOverlap(unittest.TestCase):
     def test_known_3bp_overlap(self):
         a= ('a', 'ACCGAGCGCCACCATGGTGAGCAAGGGCGAGGAGCTGTTCACCGGGGTGGTGCCCATCCT')
         b = ('b', 'CCTGGTCGAGCTGGACGGCGACGTAAACGGCCACAAGTTCAGCGTGTCCGGCGAGGGCGA')
-        self.assertEqual(max_overlap(a, b), (3, 3))
+        self.assertEqual(max_overlap(a, b), (57, 3))
 
     def test_known_longer_overlap(self):
         a =('a', 'ACCGAGCGCCACCATGGTGAGCAAGGGCGAGGAGCTGTTCACCGGGGTGGTGCCCATCCTGGTCGAGCTGGACGGCGACGTAAA')
         b = ('b', 'GGTCGAGCTGGACGGCGACGTAAACGGCCACAAGTTCAGCGTGTCCGGCGAGGGCGAGGG')
-        self.assertEqual(max_overlap(a, b), (0,0))
+        self.assertEqual(max_overlap(a, b), (60,24))
 
 class TestMaxOverlap(unittest.TestCase):
 
