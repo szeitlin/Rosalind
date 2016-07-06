@@ -121,7 +121,7 @@ def compare_all_pairs_both_ways(labeled, debug=False):
 
     if debug==True:
         for k,v in matches.items():
-            print(k,v)
+            print(k[0], [(x[0][0],x[1]) for x in v])
             #print(item[1], [x[1] for x in matches[item]])
 
     return matches
@@ -133,7 +133,9 @@ def align_matches(matches):
     :param matches: list of (name, seq) tuples
     :return: one big superstring
     """
-    pass
+    for k,v in matches:
+        pass
+
 
 
 if __name__=='__main__':

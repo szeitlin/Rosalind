@@ -1,15 +1,12 @@
 __author__ = 'szeitlin'
 
 import unittest
-from overlap import parse_nodes
 
 from gc_content import parse_data
 
 from max_overlap import max_overlap
 
 from gc_content import parse_data
-
-import operator
 
 class TestMultipleAlign(unittest.TestCase):
 
