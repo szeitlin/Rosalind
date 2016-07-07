@@ -80,17 +80,17 @@ class TestGraph(unittest.TestCase):
         labeled = list(parse_data(data))
         cls.matches = compare_all_pairs_both_ways(labeled)
 
-        with open('CENPA_8chunks.txt', 'r') as f:
-            big_data = f.readlines()
+        with open('CENPA_8chunks.txt', 'r') as g:
+            big_data = g.readlines()
 
         longer = list(parse_data(big_data))
         cls.more_matches = compare_all_pairs_both_ways(longer)
 
-        with open('CA_superstring3_expected.txt', 'r') as f:
-            cls.ss = f.readline().strip()
+        with open('CA_superstring3_expected.txt', 'r') as h:
+            cls.ss = h.readline().strip()
 
-        with open('CA_superstring8_expected.txt', 'r') as f:
-            lines = f.readlines()
+        with open('CA_superstring8_expected.txt', 'r') as m:
+            lines = m.readlines()
             cls.ss8 = ''.join([x.strip() for x in lines])
 
     def test_sort_edges(self):
@@ -103,24 +103,23 @@ class TestGraph(unittest.TestCase):
         self.assertEqual(newgraph.nodes_in_order, expected)
 
     def test_flatten_graph(self):
-        self.longMessage = True
+        self.maxDiff = None
         listofedges = make_listofedges(self.matches)
         newgraph = Graph(listofedges)
         newgraph.sort_edges()
         superstring = newgraph.flatten_graph(self.matches)
-        self.assertEqual(self.ss, superstring,
-                         msg=("expected {}, actual {}".format(self.ss, superstring)))
+        self.assertEqual(len(superstring), 180)
+        self.assertEqual(self.ss, superstring)
 
     def test_bigger_graph(self):
-        self.longMessage = True
+        self.maxDiff = None
         listofedges = make_listofedges(self.more_matches)
         self.assertEqual(len(listofedges), 8)
         newgraph = Graph(listofedges)
         newgraph.sort_edges()
         superstring = newgraph.flatten_graph(self.more_matches)
         self.assertEqual(len(superstring), 459)
-        self.assertEqual(self.ss8, superstring,
-                         msg=("expected {}, actual {}".format(self.ss, superstring)))
+        self.assertEqual(self.ss8, superstring)
 
 class TestParser(unittest.TestCase):
 

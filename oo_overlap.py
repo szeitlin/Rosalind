@@ -33,7 +33,7 @@ class Node:
         """
         #print(neighbors_list)
 
-        best_right = (None, 0)
+        best_right = (None, 8) #set a threshold minimum overlap
 
         for x,y in neighbors_list:
             if y[0] > 0:     #positive sign indicates that it's on the right
@@ -72,13 +72,13 @@ class Edge:
 
         """
         for k in matches:
-            if self.tail.name in k:
+            if self.tail.name == k[0]:
                 for val in matches[k]:
-                    if self.head.name in val[0]:
+                    if self.head.name == val[0][0]:
                         return val[1][1]
-                    # else:
-                    #     #this means it's the end of the sequence, or an error
-                    #     return 0
+        else:
+            #this means it's the end of the sequence, or an error
+            return 0
 
 class Graph:
 
@@ -118,13 +118,13 @@ class Graph:
         nontruncated = []
 
         for nodename in self.nodes_in_order:
-            #print(nodename)
+            print(nodename)
             edgeobj = allnodes.get(nodename)
             if edgeobj is not None:
                 nodeseq = edgeobj.tail.seq
                 overlap = overlaps.get(nodename)
-                #print(overlap)
-                if overlap is not None:
+                print(overlap)
+                if overlap != 0:
                     truncated = nodeseq[0:-overlap]
                     truncated_sequences.append(truncated)
                     nontruncated.append(nodeseq)
