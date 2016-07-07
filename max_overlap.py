@@ -29,26 +29,18 @@ def max_overlap(one, two):
 
     for i in range(max_diag):
         endsmatch = np.diagonal(compared, offset=i)
-        #print("above {}".format(endsmatch))
 
         maxhere = count_sequential(list(endsmatch))
-        #print(maxhere)
 
         if maxhere > bestsofar[1]:
             bestsofar = (i, maxhere)
 
-        #print(bestsofar)
-
         otherendsmatch = np.diagonal(compared, offset=-i)
-        #print("below {}".format(otherendsmatch))
 
         maxthere = count_sequential(list(otherendsmatch))
-        #print(maxthere)
 
         if maxthere > bestsofar[1]:
             bestsofar = (-i, maxthere)
-
-        #print(bestsofar)
 
     return one, two, bestsofar
 
@@ -102,14 +94,9 @@ def compare_all_pairs_both_ways(labeled, debug=False):
 
         current = labeled.pop()
 
-        #print("current is {}".format(current))
-
         for i in range(len(whole_list)):
             x = whole_list[i]
 
-            #print("comparing to {}".format(x))
-
-            #result = get_o3_overlap(current, x, debug=True)
             result = max_overlap(current, x)
 
             #avoid getting duplicates!
@@ -123,20 +110,8 @@ def compare_all_pairs_both_ways(labeled, debug=False):
     if debug==True:
         for k,v in matches.items():
             print(k[0], [(x[0][0],x[1]) for x in v])
-            #print(item[1], [x[1] for x in matches[item]])
 
     return matches
-
-def align_matches(matches):
-    """
-    Connect matches into one big superstring.
-
-    :param matches: list of (name, seq) tuples
-    :return: one big superstring
-    """
-    for k,v in matches:
-        pass
-
 
 
 if __name__=='__main__':
