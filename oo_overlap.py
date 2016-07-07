@@ -36,7 +36,7 @@ class Node:
         for x,y in neighbors_list:
             if y[0] < 0:     #negative sign indicates that it's on the left
                 if y[1] < best_left[1]:
-                    best_left = (x, y)
+                    best_left = (x, y[1])
 
         try:
             self.left_neighbor = Node(best_left[0][0], best_left[0][1])
@@ -73,7 +73,7 @@ class Node:
             if y[0] > 0:     #positive sign indicates that it's on the right
                 print('overlap {} vs. bestsofar {}'.format(y[1], best_right[1]))
                 if y[1] > best_right[1]:
-                    best_right = (x, y)
+                    best_right = (x, y[1])
 
         try:
             self.right_neighbor = Node(best_right[0][0], best_right[0][1])
