@@ -24,14 +24,6 @@ class TestThreeNodes(unittest.TestCase):
         testnode = Node(firstnode[0][0], firstnode[0][1])
         self.assertIn(testnode.name, ['first', 'second', 'third'])
 
-    def test_get_left_neighbor(self):
-        self.matches = compare_all_pairs_both_ways(self.labeled)
-        firstnode = self.matches.popitem()
-        testnode = Node(firstnode[0][0], firstnode[0][1])
-        neighbors_list = firstnode[1]
-        testnode.get_left_neighbor(neighbors_list)
-        self.assertIn(testnode.left_neighbor.name, ['start', 'first', 'second'])
-
     def test_get_right_neighbor(self):
         self.matches = compare_all_pairs_both_ways(self.labeled)
         firstnode = self.matches.popitem()
@@ -52,7 +44,6 @@ class TestNodePipe(unittest.TestCase):
     def test_nodemaker(self):
         nodes = nodemaker(self.matches)
         testnode = next(nodes)
-        self.assertIn(testnode.left_neighbor.name, ['start', 'first', 'second'])
         self.assertIn(testnode.right_neighbor.name, ['end', 'third', 'second'])
 
 class TestEdges(unittest.TestCase):
@@ -66,9 +57,9 @@ class TestEdges(unittest.TestCase):
 
     def test_listofedges(self):
         listofedges = make_listofedges(self.matches)
-        expected = ['node second, left_neighbor first, right_neighbor third',
-                    'node third, left_neighbor second, right_neighbor end',
-                    'node first, left_neighbor start, right_neighbor second'
+        expected = ['node second, right_neighbor third',
+                    'node third, right_neighbor end',
+                    'node first, right_neighbor second'
                    ]
         self.assertEqual(expected, [x.__str__() for x in listofedges])
 

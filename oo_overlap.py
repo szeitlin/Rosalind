@@ -12,39 +12,6 @@ class Node:
         self.name = name
         self.seq = seq
 
-    def get_left_neighbor(self, neighbors_list):
-        """
-        Given a node, return the
-        best match to the left (if present)
-        otherwise return None
-
-        :param node:
-        :return: node or None
-
-        >>> get_left_neighbor(('first', [('second', (60, 31)), ('third', (21, 3))]))
-        None
-        >>> get_left_neighbor(('second', [('first', (-60, 31)), ('third', (60, 31))]))
-        'first'
-        >>> get_left_neighbor(('third', [('first', (-21, 3)), ('second', (-60, 31))]))
-        'second'
-        """
-        #within neighbors_list, 2nd half of tuple is (offset, overlap)
-        #compare magnitude of overlap
-
-        best_left = (None, 0)
-
-        for x,y in neighbors_list:
-            if y[0] < 0:     #negative sign indicates that it's on the left
-                if y[1] < best_left[1]:
-                    best_left = (x, y[1])
-
-        try:
-            self.left_neighbor = Node(best_left[0][0], best_left[0][1])
-        except TypeError as e:
-            self.left_neighbor = Node("start", None)
-        return
-
-
     def get_right_neighbor(self, neighbors_list):
         """
         Given a node, return the
@@ -82,15 +49,14 @@ class Node:
 
 class Edge:
     def __init__(self, node):
-        self.left_edge = (node, node.left_neighbor)
         self.right_edge = (node, node.right_neighbor)
 
         #maybe put the overlap here, like a weight?
 
     def __str__(self):
-        return "node {}, left_neighbor {}, right_neighbor {}".format(
-               self.left_edge[0].name, self.left_edge[1].name,
-                self.right_edge[1].name)
+        return "node {}, right_neighbor {}".format(
+               #self.left_edge[0].name, self.left_edge[1].name,
+                self.right_edge[0].name, self.right_edge[1].name)
 
 class Graph:
     def __init__(self, listofedges):
@@ -111,7 +77,6 @@ def nodemaker(matches):
         seq = match[0][1]
         neighbors_list = match[1]
         newnode = Node(name, seq)
-        newnode.get_left_neighbor(neighbors_list)
         newnode.get_right_neighbor(neighbors_list)
         yield newnode
 
@@ -160,13 +125,10 @@ if __name__=='__main__':
     expected_pairs=3
 
     matches = compare_all_pairs_both_ways(labeled)
-    print(matches)
 
     if len(matches) != expected_pairs:
         print("warning! expected {} but found {}"
               .format(expected_pairs, len(matches)))
-
-
 
     #to make a graph with Gephi:
     matches_to_graph(matches)
