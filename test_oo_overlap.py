@@ -124,8 +124,6 @@ class TestGraph(unittest.TestCase):
 class TestParser(unittest.TestCase):
 
     def setUp(cls):
-        with open('overlap_sample.txt', 'r') as f:
-            cls.data = f.readlines()
 
         with open('rosalind_grph.txt', 'r') as f:
             cls.big_data = f.readlines()
