@@ -66,7 +66,11 @@ class TestEdges(unittest.TestCase):
 
     def test_listofedges(self):
         listofedges = make_listofedges(self.matches)
-        self.assertEqual(('first', 'second', 'third'), listofedges)
+        expected = ['node second, left_neighbor first, right_neighbor third',
+                    'node third, left_neighbor second, right_neighbor end',
+                    'node first, left_neighbor start, right_neighbor second'
+                   ]
+        self.assertEqual(expected, [x.__str__() for x in listofedges])
 
 if __name__=='__main__':
     unittest.main()

@@ -69,9 +69,7 @@ class Node:
         best_right = (None, 0)
 
         for x,y in neighbors_list:
-            print("y: {}".format(y))
             if y[0] > 0:     #positive sign indicates that it's on the right
-                print('overlap {} vs. bestsofar {}'.format(y[1], best_right[1]))
                 if y[1] > best_right[1]:
                     best_right = (x, y[1])
 
@@ -85,11 +83,14 @@ class Node:
 class Edge:
     def __init__(self, node):
         self.left_edge = (node, node.left_neighbor)
-        #self.right_edge = (node, node.right_neighbor)
+        self.right_edge = (node, node.right_neighbor)
+
+        #maybe put the overlap here, like a weight?
 
     def __str__(self):
-        print(self.left_edge)
-        #print(self.right_edge)
+        return "node {}, left_neighbor {}, right_neighbor {}".format(
+               self.left_edge[0].name, self.left_edge[1].name,
+                self.right_edge[1].name)
 
 class Graph:
     def __init__(self, listofedges):
