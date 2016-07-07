@@ -71,5 +71,24 @@ class TestEdges(unittest.TestCase):
                    ])
         self.assertEqual(expected, sorted([x.__str__() for x in listofedges]))
 
+class TestGraph(unittest.TestCase):
+
+    def setUp(cls):
+        with open('CENPA_3chunks.txt', 'r') as f:
+            data = f.readlines()
+
+        labeled = list(parse_data(data))
+        cls.matches = compare_all_pairs_both_ways(labeled)
+
+    def test_sort_edges(self):
+        listofedges = make_listofedges(self.matches)
+        newgraph = Graph(listofedges)
+        self.assertTrue(isinstance(newgraph, Graph))
+        newgraph.sort_edges()
+        self.assertTrue(isinstance(newgraph.nodes_in_order, list))
+        expected = ['first', 'second', 'third', 'end']
+        self.assertEqual(newgraph.nodes_in_order, expected)
+
+
 if __name__=='__main__':
     unittest.main()

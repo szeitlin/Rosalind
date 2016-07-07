@@ -48,8 +48,11 @@ class Node:
 
 
 class Edge:
+
     def __init__(self, node):
         self.right_edge = (node, node.right_neighbor)
+        self.tail = node
+        self.head = node.right_neighbor
 
     def __str__(self):
         return "node {}, right_neighbor {}".format(
@@ -77,10 +80,37 @@ class Edge:
                 return 0
 
 class Graph:
+
     def __init__(self, listofedges):
         self.edges = listofedges
 
+    def sort_edges(self, findthis='end'):
+        """
+        Order and simplify the singly-linked list of edges
+        back down to a list of single nodes identified by name.
+        """
+        edgelist = self.edges
+        order = []
+
+        for i in range(len(edgelist)):
+            for edge in edgelist:
+                #print("item: {}, findthis: {}".format(edge, findthis))
+                if findthis == edge.head.name:
+                    #print("found!")
+                    if findthis not in order:
+                        order.insert(0, findthis)
+                    findthis = edge.tail.name
+
+                    if len(edgelist) == 1:
+                        if edgelist[0].tail.name not in order:
+                            order.insert(0, edgelist[0].tail.name)
+                    else:
+                        edgelist.remove(edge)
+
+        self.nodes_in_order = order
+
     def flatten_graph(self):
+        """ Use the overlap values to align sequences """
         pass
 
 
