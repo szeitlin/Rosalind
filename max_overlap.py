@@ -115,10 +115,10 @@ def compare_all_pairs_both_ways(labeled, debug=False):
             #avoid getting duplicates!
             if result is not None:
                 if result[0] not in matches:
-                    matches[result[0]].append(result[1:])
+                    matches[result[0]].append((result[1], result[2]))
                 elif result[0] in matches:
                     if result[1] not in matches[result[0]]:
-                        matches[result[0]].append(result[1:])
+                        matches[result[0]].append((result[1], result[2]))
 
     if debug==True:
         for k,v in matches.items():

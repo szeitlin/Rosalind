@@ -40,8 +40,8 @@ class Node:
 
         try:
             self.left_neighbor = Node(best_left[0][0], best_left[0][1])
-        except TypeError as e: #there may not be one
-            self.left_neighbor = None
+        except TypeError as e:
+            self.left_neighbor = Node("start", None)
         return
 
 
@@ -64,11 +64,12 @@ class Node:
                                 (('second', 'ACCG'), (-60, 31))]))
         None
         """
-        print(neighbors_list)
+        #print(neighbors_list)
 
         best_right = (None, 0)
 
         for x,y in neighbors_list:
+            print("y: {}".format(y))
             if y[0] > 0:     #positive sign indicates that it's on the right
                 print('overlap {} vs. bestsofar {}'.format(y[1], best_right[1]))
                 if y[1] > best_right[1]:
@@ -77,7 +78,7 @@ class Node:
         try:
             self.right_neighbor = Node(best_right[0][0], best_right[0][1])
         except TypeError as e:
-            self.right_neighbor = None
+            self.right_neighbor = Node("end", None)
         return
 
 
