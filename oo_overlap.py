@@ -51,12 +51,30 @@ class Edge:
     def __init__(self, node):
         self.right_edge = (node, node.right_neighbor)
 
-        #maybe put the overlap here, like a weight?
-
     def __str__(self):
         return "node {}, right_neighbor {}".format(
-               #self.left_edge[0].name, self.left_edge[1].name,
                 self.right_edge[0].name, self.right_edge[1].name)
+
+    def get_node_overlap(self, matches):
+        """
+        Retrieve overlap length from matches dict.
+
+        :param matches: adjacency dict
+        :param self: use node and right_neighbor names for lookup
+        :return: int
+
+        >>> get_node_overlap(matches)
+        31
+
+        """
+        for k in matches:
+            if self.right_edge[0].name in k:
+                for val in matches[k]:
+                    if self.right_edge[0].name in val[0]:
+                        self.overlap = val[1][1]
+            else:
+                #this means it's the end of the sequence, or an error
+                return 0
 
 class Graph:
     def __init__(self, listofedges):

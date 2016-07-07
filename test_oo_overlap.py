@@ -6,7 +6,10 @@ from max_overlap import compare_all_pairs_both_ways
 
 from gc_content import parse_data
 
-from oo_overlap import Node, Edge, Graph, make_listofedges, nodemaker
+from oo_overlap import (Node, Edge, Graph,
+                        make_listofedges,
+                        edgemaker,
+                        nodemaker)
 
 
 class TestThreeNodes(unittest.TestCase):
@@ -16,7 +19,6 @@ class TestThreeNodes(unittest.TestCase):
             data = f.readlines()
 
         cls.labeled = list(parse_data(data))
-
 
     def test_create_node_from_matches_dict(self):
         self.matches = compare_all_pairs_both_ways(self.labeled)
@@ -55,13 +57,19 @@ class TestEdges(unittest.TestCase):
         labeled = list(parse_data(data))
         cls.matches = compare_all_pairs_both_ways(labeled)
 
+    def test_get_node_overlap(self):
+        edges = edgemaker(self.matches)
+        newedge = next(edges)
+        overlap = newedge.get_node_overlap(self.matches)
+        self.assertTrue(isinstance(overlap, int))
+
     def test_listofedges(self):
         listofedges = make_listofedges(self.matches)
-        expected = ['node second, right_neighbor third',
+        expected = sorted(['node second, right_neighbor third',
                     'node third, right_neighbor end',
                     'node first, right_neighbor second'
-                   ]
-        self.assertEqual(expected, [x.__str__() for x in listofedges])
+                   ])
+        self.assertEqual(expected, sorted([x.__str__() for x in listofedges]))
 
 if __name__=='__main__':
     unittest.main()
