@@ -1,8 +1,5 @@
 __author__ = 'szeitlin'
 
-from collections import defaultdict
-import numpy as np
-
 from gc_content import parse_data
 from o3_overlap import matches_to_rosalind, matches_to_graph
 from max_overlap import compare_all_pairs_both_ways
@@ -115,23 +112,19 @@ class Graph:
         overlaps = {x.tail.name:x.get_node_overlap(matches) for x in self.edges}
 
         truncated_sequences = []
-        nontruncated = []
 
         for nodename in self.nodes_in_order:
-            print(nodename)
             edgeobj = allnodes.get(nodename)
             if edgeobj is not None:
                 nodeseq = edgeobj.tail.seq
                 overlap = overlaps.get(nodename)
-                print(overlap)
+
                 if overlap != 0:
                     truncated = nodeseq[0:-overlap]
                     truncated_sequences.append(truncated)
-                    nontruncated.append(nodeseq)
+
                 else: #last one
                     truncated_sequences.append(nodeseq)
-
-        print("nontruncated seq list: {}".format(nontruncated))
 
         return ''.join(truncated_sequences)
 
@@ -188,17 +181,24 @@ def make_listofedges(matches):
 
 if __name__=='__main__':
 
-    with open('CENPA_3chunks.txt', 'r') as f:
+    with open('CENPA_8chunks.txt', 'r') as f:
         data = f.readlines()
 
     labeled = list(parse_data(data))
-    expected_pairs=3
+    expected_pairs=8
 
     matches = compare_all_pairs_both_ways(labeled)
 
     if len(matches) != expected_pairs:
         print("warning! expected {} but found {}"
               .format(expected_pairs, len(matches)))
+
+    listofedges = make_listofedges(matches)
+    newgraph = Graph(listofedges)
+    newgraph.sort_edges()
+    superstring = newgraph.flatten_graph(matches)
+
+    print(superstring)
 
     #to make a graph with Gephi:
     matches_to_graph(matches)
