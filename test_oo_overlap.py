@@ -122,6 +122,19 @@ class TestGraph(unittest.TestCase):
         self.assertEqual(self.ss8, superstring,
                          msg=("expected {}, actual {}".format(self.ss, superstring)))
 
+class TestParser(unittest.TestCase):
+
+    def setUp(cls):
+        with open('overlap_sample.txt', 'r') as f:
+            cls.data = f.readlines()
+
+        with open('rosalind_grph.txt', 'r') as f:
+            cls.big_data = f.readlines()
+
+    def test_old_parser(self):
+        parsed = list(parse_data(self.big_data))
+        self.assertEqual(len(parsed), 100)
+
 
 if __name__=='__main__':
     unittest.main()
