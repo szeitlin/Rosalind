@@ -80,6 +80,9 @@ class TestGraph(unittest.TestCase):
         labeled = list(parse_data(data))
         cls.matches = compare_all_pairs_both_ways(labeled)
 
+        with open('CA_superstring3_expected.txt', 'r') as f:
+            cls.ss = f.readline().strip()
+
     def test_sort_edges(self):
         listofedges = make_listofedges(self.matches)
         newgraph = Graph(listofedges)
@@ -88,6 +91,15 @@ class TestGraph(unittest.TestCase):
         self.assertTrue(isinstance(newgraph.nodes_in_order, list))
         expected = ['first', 'second', 'third', 'end']
         self.assertEqual(newgraph.nodes_in_order, expected)
+
+    def test_flatten_graph(self):
+        self.longMessage = True
+        listofedges = make_listofedges(self.matches)
+        newgraph = Graph(listofedges)
+        newgraph.sort_edges()
+        superstring = newgraph.flatten_graph(self.matches)
+        self.assertEqual(self.ss, superstring,
+                         msg=("expected {}, actual {}".format(self.ss, superstring)))
 
 
 if __name__=='__main__':

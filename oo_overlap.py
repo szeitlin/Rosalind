@@ -49,10 +49,11 @@ class Node:
 
 class Edge:
 
-    def __init__(self, node):
+    def __init__(self, node, matches):
         self.right_edge = (node, node.right_neighbor)
         self.tail = node
         self.head = node.right_neighbor
+        self.overlap = self.get_node_overlap(matches)
 
     def __str__(self):
         return "node {}, right_neighbor {}".format(
@@ -71,13 +72,13 @@ class Edge:
 
         """
         for k in matches:
-            if self.right_edge[0].name in k:
+            if self.tail.name in k:
                 for val in matches[k]:
-                    if self.right_edge[0].name in val[0]:
-                        self.overlap = val[1][1]
-            else:
-                #this means it's the end of the sequence, or an error
-                return 0
+                    if self.head.name in val[0]:
+                        return val[1][1]
+                    # else:
+                    #     #this means it's the end of the sequence, or an error
+                    #     return 0
 
 class Graph:
 
@@ -89,14 +90,12 @@ class Graph:
         Order and simplify the singly-linked list of edges
         back down to a list of single nodes identified by name.
         """
-        edgelist = self.edges
+        edgelist = self.edges.copy()
         order = []
 
         for i in range(len(edgelist)):
             for edge in edgelist:
-                #print("item: {}, findthis: {}".format(edge, findthis))
                 if findthis == edge.head.name:
-                    #print("found!")
                     if findthis not in order:
                         order.insert(0, findthis)
                     findthis = edge.tail.name
@@ -109,9 +108,32 @@ class Graph:
 
         self.nodes_in_order = order
 
-    def flatten_graph(self):
+    def flatten_graph(self, matches):
         """ Use the overlap values to align sequences """
-        pass
+
+        allnodes = {x.tail.name: x for x in self.edges}
+        overlaps = {x.tail.name:x.get_node_overlap(matches) for x in self.edges}
+
+        truncated_sequences = []
+        nontruncated = []
+
+        for nodename in self.nodes_in_order:
+            #print(nodename)
+            edgeobj = allnodes.get(nodename)
+            if edgeobj is not None:
+                nodeseq = edgeobj.tail.seq
+                overlap = overlaps.get(nodename)
+                #print(overlap)
+                if overlap is not None:
+                    truncated = nodeseq[0:-overlap]
+                    truncated_sequences.append(truncated)
+                    nontruncated.append(nodeseq)
+                else: #last one
+                    truncated_sequences.append(nodeseq)
+
+        print("nontruncated seq list: {}".format(nontruncated))
+
+        return ''.join(truncated_sequences)
 
 
 def nodemaker(matches):
@@ -139,7 +161,7 @@ def edgemaker(matches):
     while nodes:
         try:
             newnode = next(nodes)
-            newedge = Edge(newnode)
+            newedge = Edge(newnode, matches)
             yield newedge
 
         except StopIteration:
